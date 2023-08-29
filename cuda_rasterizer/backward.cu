@@ -410,7 +410,7 @@ renderCUDA(
 	const float* __restrict__ final_Ts,
 	const uint32_t* __restrict__ n_contrib,
 	const float* __restrict__ dL_dpixels,
-	const float* __restrict__ dL_depths,
+	const float* __restrict__ dL_daccs,
 	float3* __restrict__ dL_dmean2D,
 	float4* __restrict__ dL_dconic2D,
 	float* __restrict__ dL_dopacity,
@@ -451,16 +451,16 @@ renderCUDA(
 
 	float accum_rec[C] = { 0 };
 	float dL_dpixel[C];
-	float dL_depth;
-	float accum_depth_rec = 0;
+	float dL_acc;
+	float accum_acc_rec = 0;
 	if (inside)
 		for (int i = 0; i < C; i++)
 			dL_dpixel[i] = dL_dpixels[i * H * W + pix_id];
-	        dL_depth = dL_depths[pix_id];
+	        dL_acc = dL_daccs[pix_id];
 
 	float last_alpha = 0;
 	float last_color[C] = { 0 };
-	float last_depth = 0;
+	float last_acc = 0;
 
 	// Gradient of pixel coordinate w.r.t. normalized 
 	// screen-space viewport corrdinates (-1 to 1)
@@ -482,7 +482,7 @@ renderCUDA(
 			collected_conic_opacity[block.thread_rank()] = conic_opacity[coll_id];
 			for (int i = 0; i < C; i++)
 				collected_colors[i * BLOCK_SIZE + block.thread_rank()] = colors[coll_id * C + i];
-            collected_depths[block.thread_rank()] = 1.0;
+//             collected_depths[block.thread_rank()] = 1.0;
 		}
 		block.sync();
 
@@ -530,10 +530,11 @@ renderCUDA(
 				// many that were affected by this Gaussian.
 				atomicAdd(&(dL_dcolors[global_id * C + ch]), dchannel_dcolor * dL_dchannel);
 			}
-			const float c_d = collected_depths[j];
-			accum_depth_rec = last_alpha * last_depth + (1.f - last_alpha) * accum_depth_rec;
-			last_depth = c_d;
-			dL_dalpha += (c_d - accum_depth_rec) * dL_depth;
+// 			const float c_d = collected_depths[j];
+            const float c_d = 1.0;
+			accum_acc_rec = last_alpha * last_acc + (1.f - last_alpha) * accum_acc_rec;
+			last_acc = c_d;
+			dL_dalpha += (c_d - accum_acc_rec) * dL_acc;
 			dL_dalpha *= T;
 			// Update last alpha (to be used in the next iteration)
 			last_alpha = alpha;
@@ -646,7 +647,7 @@ void BACKWARD::render(
 	const float* final_Ts,
 	const uint32_t* n_contrib,
 	const float* dL_dpixels,
-	const float* dL_depths,
+	const float* dL_daccs,
 	float3* dL_dmean2D,
 	float4* dL_dconic2D,
 	float* dL_dopacity,
@@ -664,7 +665,7 @@ void BACKWARD::render(
 		final_Ts,
 		n_contrib,
 		dL_dpixels,
-		dL_depths,
+		dL_daccs,
 		dL_dmean2D,
 		dL_dconic2D,
 		dL_dopacity,
