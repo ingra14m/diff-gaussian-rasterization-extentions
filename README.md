@@ -6,6 +6,15 @@ This is a forked repository of the rasterization pipeline from the paper "3D Gau
 - 4th-degree: add the 4th degree of SH
 - depth: add both the forward and backward pass of depth, which is used for some tasks with depth supervision.
 - latest: is the dev branch that contains acc and depth visualization, together with depth backward pass. 
+- depth-mean3D: add additional backward pass to the mean3D based on the `depth` branch 
+
+
+
+## News
+
+- 23/11/9. Thanks to [slothfulxtx](https://github.com/slothfulxtx) for adding depth backward pass to mean3D. I have put this optimization on the `depth-mean3D` branch.
+
+
 
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
