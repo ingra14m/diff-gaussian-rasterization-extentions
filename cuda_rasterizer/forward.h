@@ -55,7 +55,7 @@ namespace FORWARD
 		int W, int H,
 		const float2* points_xy_image,
 		const float* features,
-		const float* depths,
+		const float* depth,
 		const float4* conic_opacity,
 		float* final_T,
 		uint32_t* n_contrib,
