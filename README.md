@@ -1,6 +1,6 @@
-# Differential Gaussian Rasterization
+# Differential Gaussian Rasterization Extensions
 
-This is a forked repository of the rasterization pipeline from the paper "3D Gaussian Splatting for Real-Time Rendering of Radiance Fields". I have made some extensions to it: 
+This is a forked repository of the rasterization pipeline from the paper "3D Gaussian Splatting for Real-Time Rendering of Radiance Fields". The same repo can be seen at [depth-diff-gaussian-rasterization](https://github.com/ingra14m/depth-diff-gaussian-rasterization). To facilitate everyone's search, I have separated this repo from the forked branch. I have made some extensions to it: 
 
 - main branch incorporates only the forward pass of depth, which is used for depth visualization. 
 - 4th-degree: add the 4th degree of SH
