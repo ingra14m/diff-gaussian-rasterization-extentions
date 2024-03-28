@@ -176,6 +176,7 @@ class GaussianRasterizationSettings(NamedTuple):
     tanfovy : float
     bg : torch.Tensor
     scale_modifier : float
+    depth_threshold : float
     viewmatrix : torch.Tensor
     projmatrix : torch.Tensor
     sh_degree : int
