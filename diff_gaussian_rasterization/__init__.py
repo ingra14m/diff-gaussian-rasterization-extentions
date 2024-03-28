@@ -135,17 +135,29 @@ class _RasterizeGaussians(torch.autograd.Function):
         if raster_settings.debug:
             cpu_args = cpu_deep_copy_tuple(args) # Copy them before they can be corrupted
             try:
-                grad_means2D, grad_colors_precomp, grad_opacities, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations = _C.rasterize_gaussians_backward(*args)
+                grad_means2D, grad_colors_precomp, grad_opacities, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations, depth = _C.rasterize_gaussians_backward(*args)
             except Exception as ex:
                 torch.save(cpu_args, "snapshot_bw.dump")
                 print("\nAn error occured in backward. Writing snapshot_bw.dump for debugging.\n")
                 raise ex
         else:
-             grad_means2D, grad_colors_precomp, grad_opacities, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations = _C.rasterize_gaussians_backward(*args)
+             grad_means2D, grad_colors_precomp, grad_opacities, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations, depth = _C.rasterize_gaussians_backward(*args)
+
+        # Calculate the scaling factor
+        scaling_factor = torch.minimum(torch.ones_like(depth), (depth / raster_settings.depth_threshold) ** 2)
+
+        def scale_tensor(tensor, scaling_factor):
+            num_dims = len(tensor.shape)
+            for _ in range(num_dims - 2):
+                scaling_factor = scaling_factor.unsqueeze(-1)
+            scaling_factor_expanded = scaling_factor.expand_as(tensor)
+            return tensor * scaling_factor_expanded
+        
+        scaled_grad_means2D = scale_tensor(grad_means2D, scaling_factor)
 
         grads = (
             grad_means3D,
-            grad_means2D,
+            scaled_grad_means2D,
             grad_sh,
             grad_colors_precomp,
             grad_opacities,
